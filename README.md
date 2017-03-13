@@ -1,5 +1,6 @@
 # Mobile_Server
 A server for android client
+
 It implments Login and Register function by now
 
 Users' information stores in mysql database, you can use *Mobile_Recommender.sql*to build your database or use *Mobile_Recommender.mwb* to alter the model.
