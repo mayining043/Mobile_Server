@@ -44,7 +44,7 @@ public class Predict_SVD {
 			// 如果推荐的物品在候选物品列表中
 			if (item_list.contains(item_id)) {
 				double rate = recItem.getValue();
-				//保留两位小数
+				//保留1位小数
 				BigDecimal b = new BigDecimal(rate);
 				rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
 				String item_rating = String.valueOf(rate > 5 ? 5 : rate);
