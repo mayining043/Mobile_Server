@@ -1,5 +1,6 @@
 package com.yly.core;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class Predict_SVD {
 	private int user_id;// 目标用户id
 	private ItemDao dao = new ItemDaoImpl();
 	private ArrayList<Integer> item_list = dao.getAllItem();// 待推荐物品列表,默认为全体item
-	private int recommendNums = 3;// 推荐物品数量
+	private int recommendNums = 3;// 推荐物品数量，默认为3个
 
 	public Predict_SVD(String user_id, ArrayList<Integer> item_list, int recommendNums) {
 		this.user_id = Integer.parseInt(user_id);
@@ -38,16 +39,19 @@ public class Predict_SVD {
 		SVDRecommender recommender = new SVDRecommender(model, new ALSWRFactorizer(model, 10, 0.05, 10));
 
 		List<RecommendedItem> recommendations = recommender.recommend(user_id, recommendNums);
-
 		for (RecommendedItem recItem : recommendations) {
 			int item_id = (int) recItem.getItemID();
 			// 如果推荐的物品在候选物品列表中
 			if (item_list.contains(item_id)) {
 				double rate = recItem.getValue();
+				//保留两位小数
+				BigDecimal b = new BigDecimal(rate);
+				rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
 				String item_rating = String.valueOf(rate > 5 ? 5 : rate);
 				recList.append(item_id + "," + item_rating + ";");
 			}
 		}
+
 		return recList.toString();
 	}
 

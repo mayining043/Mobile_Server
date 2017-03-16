@@ -193,7 +193,7 @@ public class ItemDaoImpl implements ItemDao {
 			// 创建预定义语句
 			PreparedStatement pstmt = conn.prepareStatement(sql);
 			ResultSet rs = pstmt.executeQuery();
-			while(rs.next()) {
+			while (rs.next()) {
 				item_list.add(rs.getInt("item_id"));
 			}
 			return item_list;
@@ -205,4 +205,41 @@ public class ItemDaoImpl implements ItemDao {
 		return null;
 	}
 
+	@Override
+	public ArrayList<Integer> getItemWithinDistance(double latitude, double longitude, int radius) {
+		// SQL查询语句
+		String sql = "select item_id from iteminfo where (ROUND(6378.138*2*ASIN(SQRT(POW(SIN((?*PI()/180-latitude*PI()/180)/2),2)+COS(?*PI()/180)*COS(latitude*PI()/180)*POW(SIN((?*PI()/180-longitude*PI()/180)/2),2)))*1000))/1000<=?";
+
+		// 实例化数据库工具类
+		DBUtil util = new DBUtil();
+
+		// 获得数据库连接
+		Connection conn = util.openConnection();
+
+		try {
+			// 创建预定义语句
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+
+			// 设置查询参数
+			pstmt.setDouble(1, latitude);
+			pstmt.setDouble(2, latitude);
+			pstmt.setDouble(3, longitude);
+			pstmt.setInt(4, radius);
+
+			// 结果集
+			ResultSet rs = pstmt.executeQuery();
+			ArrayList<Integer> item_list = new ArrayList<>();
+			// 判断该物品是否存在
+			while (rs.next()) {
+				// 获得物品编号
+				item_list.add(rs.getInt("item_id"));
+			}
+			return item_list;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			util.closeConn(conn);
+		}
+	}
 }

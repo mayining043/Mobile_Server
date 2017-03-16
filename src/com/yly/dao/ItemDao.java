@@ -42,4 +42,11 @@ public interface ItemDao {
 	 * @return a list of item_id store in ArrayList<Integer>
 	 */
 	public ArrayList<Integer> getAllItem();
+	/**
+	 * return item_id which item's distance within the round with certain radius
+	 * 
+	 * @return a list of item_id store in ArrayList<Integer>
+	 */
+	public ArrayList<Integer> getItemWithinDistance(double latitude,double longitude,int radius);
+	
 }
