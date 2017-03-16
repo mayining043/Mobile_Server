@@ -121,6 +121,8 @@ class BiasedMF extends BiasedMFRecommender {
 		StringBuffer recList = new StringBuffer();
 		HashMap<Integer, String> init_list = new HashMap<>();
 		for (int item_id : item_list) {
+			if(0==dao.getInnderItemId(item_id))
+				continue;
 			double rate = predict(dao.getInnerUserId(user_id), dao.getInnderItemId(item_id));
 			// 保留1位小数
 			BigDecimal b = new BigDecimal(rate);

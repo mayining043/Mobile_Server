@@ -165,6 +165,8 @@ public class DataDaoImpl implements DataDao {
 
 	@Override
 	public int getInnderItemId(int item_id) {
+		if(itemIds.get(item_id)==null)
+			return 0;
 		return itemIds.get(item_id);
 	}
 
