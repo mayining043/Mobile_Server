@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import com.yly.dao.ItemDao;
 import com.yly.entity.Item;
@@ -123,4 +124,85 @@ public class ItemDaoImpl implements ItemDao {
 			util.closeConn(conn);
 		}
 	}
+
+	@Override
+	public Item search_itemInfo(int item_id) {
+		// SQL查询语句
+		String sql = "select * from iteminfo where item_id=?";
+
+		// 实例化数据库工具类
+		DBUtil util = new DBUtil();
+
+		// 获得数据库连接
+		Connection conn = util.openConnection();
+
+		try {
+			// 创建预定义语句
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+
+			// 设置查询参数
+			pstmt.setInt(1, item_id);
+
+			// 结果集
+			ResultSet rs = pstmt.executeQuery();
+
+			// 判断物品是否存在
+			if (rs.next()) {
+				// 实例化Item
+				Item i = new Item();
+				String item_name = rs.getString("item_name");
+				Double latitude = rs.getDouble("latitude");
+				Double longitude = rs.getDouble("longitude");
+				Double avg_price = rs.getDouble("avg_price");
+				Double avg_rating = rs.getDouble("avg_rating");
+				String item_type = rs.getString("item_type");
+				String item_address = rs.getString("item_address");
+				// 设置Item属性
+				i.setItem_id(item_id);
+				i.setItem_name(item_name);
+				i.setAvg_price(avg_price);
+				i.setAvg_rating(avg_rating);
+				i.setItem_address(item_address);
+				i.setItem_type(item_type);
+				i.setLatitude(latitude);
+				i.setLongitude(longitude);
+
+				return i;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			util.closeConn(conn);
+		}
+		return null;
+	}
+
+	@Override
+	public ArrayList<Integer> getAllItem() {
+		ArrayList<Integer> item_list = new ArrayList<>();
+		// SQL查询语句
+		String sql = "select item_id from iteminfo";
+
+		// 实例化数据库工具类
+		DBUtil util = new DBUtil();
+
+		// 获得数据库连接
+		Connection conn = util.openConnection();
+
+		try {
+			// 创建预定义语句
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()) {
+				item_list.add(rs.getInt("item_id"));
+			}
+			return item_list;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			util.closeConn(conn);
+		}
+		return null;
+	}
+
 }
