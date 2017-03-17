@@ -42,13 +42,22 @@ public class PerRecCAMFBServlet extends HttpServlet {
 		double latitude = Double.valueOf(request.getParameter("latitude"));
 		double longitude = Double.valueOf(request.getParameter("longitude"));
 		int radius = Integer.parseInt(request.getParameter("radius"));
-		// int weather = Integer.valueOf(request.getParameter("weather"));
-		// int time = Integer.valueOf(request.getParameter("time"));
-		// int daytype = Integer.valueOf(request.getParameter("daytype"));
-		// int season = Integer.valueOf(request.getParameter("season"));
+		// context
+		int weather = Integer.valueOf(request.getParameter("weather"));
+		int time = Integer.valueOf(request.getParameter("time"));
+		int daytype = Integer.valueOf(request.getParameter("daytype"));
+		int season = Integer.valueOf(request.getParameter("season"));
+
 		int recNum = Integer.valueOf(request.getParameter("recNum"));
 
 		ItemDao dao = new ItemDaoImpl();
+
+		int contextNum = 4;
+		int[] currCon = new int[contextNum];
+		currCon[0] = time;
+		currCon[1] = weather;
+		currCon[2] = season;
+		currCon[3] = daytype;
 		// 获得候选推荐集
 		ArrayList<Integer> init_item_list = dao.getItemWithinDistance(latitude, longitude, radius);
 		PrintWriter out = response.getWriter();
@@ -56,7 +65,7 @@ public class PerRecCAMFBServlet extends HttpServlet {
 		String recItems = null;
 
 		if (init_item_list.size() != 0) {
-			Predict_CAMFB p = new Predict_CAMFB(user_id, init_item_list, recNum);
+			Predict_CAMFB p = new Predict_CAMFB(user_id, init_item_list, recNum,currCon);
 			try {
 				recItems = p.getRecommendation();
 

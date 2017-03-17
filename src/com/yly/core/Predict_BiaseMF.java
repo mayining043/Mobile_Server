@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 import com.yly.dao.DataDao;
 import com.yly.dao.ItemDao;
@@ -119,7 +119,7 @@ class BiasedMF extends BiasedMFRecommender {
 		setup();
 		trainModel();
 		StringBuffer recList = new StringBuffer();
-		HashMap<Integer, String> init_list = new HashMap<>();
+		HashMap<Integer, Double> init_list = new HashMap<>();
 		for (int item_id : item_list) {
 			if(0==dao.getInnderItemId(item_id))
 				continue;
@@ -127,16 +127,16 @@ class BiasedMF extends BiasedMFRecommender {
 			// 保留1位小数
 			BigDecimal b = new BigDecimal(rate);
 			rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-			String item_rating = String.valueOf(rate > 5 ? 5 : rate);
+			Double item_rating = rate > 5 ? 5 : rate;
 			init_list.put(item_id, item_rating);
 		}
-		int count = 0;
-		Set<Integer> keys = init_list.keySet();
-		Iterator<Integer> iterator = keys.iterator();
-		while (iterator.hasNext() && count < recommendNums) {
-			int item = iterator.next();
-			recList.append(item + "," + init_list.get(item) + ";");
-			count++;
+		//对候选推荐结果排序
+		List<Map.Entry<Integer, Double>> list=dao.sortHashMapByValue(init_list);
+		for(int i=0;i<recommendNums&&!list.isEmpty();i++){
+			int item=list.get(i).getKey();
+			double rate=list.get(i).getValue();
+			recList.append(item + "," + rate + ";");
+			list.remove(i);
 		}
 		return recList.toString();
 	}

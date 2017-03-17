@@ -5,6 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
@@ -24,6 +30,9 @@ public class DataDaoImpl implements DataDao {
 
 	// inverse views of userIds, itemIds
 	private BiMap<Integer, Integer> idUsers, idItems;
+
+	// context {raw context id,inner context id}
+	private BiMap<Integer, Integer>[] contextIds;
 
 	public DataDaoImpl() {
 
@@ -77,6 +86,7 @@ public class DataDaoImpl implements DataDao {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public SparseMatrix[] readContextData() {
 
@@ -99,17 +109,20 @@ public class DataDaoImpl implements DataDao {
 			int columnCount = rsmd.getColumnCount();
 			// 上下文个数
 			int numContext = columnCount - 5;
+
 			// Map {col-id, multiple row-id}: used to fast build a context
 			// matrix
 			Multimap<Integer, Integer> colMap = HashMultimap.create();
 
 			SparseMatrix[] contextMatrix = new SparseMatrix[numContext];
 			// Table{row-id,col-id,context}
-			@SuppressWarnings("unchecked")
 			Table<Integer, Integer, Integer> contextTable[] = new Table[numContext];
+			contextIds = new BiMap[numContext];
 			for (int i = 0; i < numContext; i++) {
 				if (contextTable[i] == null)
 					contextTable[i] = HashBasedTable.create();
+				if (contextIds[i] == null)
+					contextIds[i] = HashBiMap.create();
 			}
 			while (rs.next()) {
 				int user_id = rs.getInt("user_id");
@@ -124,7 +137,12 @@ public class DataDaoImpl implements DataDao {
 					itemIds.put(item_id, col);
 
 					int context = Integer.parseInt(rs.getString(i + 6));
-					contextTable[i].put(row, col, context);
+					if (context >= 0) {
+						int position = contextIds[i].containsKey(context) ? contextIds[i].get(context)
+								: contextIds[i].size();
+						contextTable[i].put(row, col, context);
+						contextIds[i].put(context, position);
+					}
 					colMap.put(col, row);
 				}
 			}
@@ -165,9 +183,41 @@ public class DataDaoImpl implements DataDao {
 
 	@Override
 	public int getInnderItemId(int item_id) {
-		if(itemIds.get(item_id)==null)
+		if (itemIds.get(item_id) == null)
 			return 0;
 		return itemIds.get(item_id);
+	}
+
+	@Override
+	public int getInnderContextId(int condition_id, int context) {
+		if (contextIds[context].get(condition_id) == null)
+			return 0;
+		return contextIds[context].get(condition_id);
+	}
+
+	@Override
+	public int[] getNumContextCondition() {
+		int contextNum = contextIds.length;
+		int[] numCondition = new int[contextNum];
+		for (int i = 0; i < contextNum; i++) {
+			numCondition[i] = contextIds[i].size();
+		}
+		return numCondition;
+	}
+	@Override
+	public List<Map.Entry<Integer, Double>> sortHashMapByValue(HashMap<Integer, Double> init_list) {
+		List<Map.Entry<Integer, Double>> list_Data = new ArrayList<Map.Entry<Integer, Double>>(init_list.entrySet());
+		Collections.sort(list_Data, new Comparator<Map.Entry<Integer, Double>>() {
+			public int compare(Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2) {
+				if (o2.getValue() != null && o1.getValue() != null && o2.getValue().compareTo(o1.getValue()) > 0) {
+					return 1;
+				} else {
+					return -1;
+				}
+
+			}
+		});
+		return list_Data;
 	}
 
 }

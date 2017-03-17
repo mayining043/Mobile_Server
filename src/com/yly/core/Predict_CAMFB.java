@@ -3,8 +3,8 @@ package com.yly.core;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 import com.yly.dao.DataDao;
 import com.yly.dao.ItemDao;
@@ -24,20 +24,22 @@ public class Predict_CAMFB {
 	private ItemDao dao = new ItemDaoImpl();
 	private ArrayList<Integer> item_list = dao.getAllItem();// 待推荐物品列表,默认为全体item
 	private int recommendNums = 3;// 推荐物品数量，默认为3个
+	private int[] currCon;//当前上下文
 
-	public Predict_CAMFB(String user_id, ArrayList<Integer> item_list, int recommendNums) {
+	public Predict_CAMFB(String user_id, ArrayList<Integer> item_list, int recommendNums,int[] currCon) {
 		this.user_id = Integer.parseInt(user_id);
 		if (item_list != null) {
 			this.item_list = item_list;
 		}
 		if (recommendNums >= 0)
 			this.recommendNums = recommendNums;
+		this.currCon=currCon;
 	}
 
 	// 根据候选物品列表、当前用户id和推荐数量获得推荐。
 	public String getRecommendation() throws Exception {
 		String recList = new String();
-		ContextMF recommender = new ContextMF(user_id, item_list, recommendNums);
+		ContextMF recommender = new ContextMF(user_id, item_list, recommendNums,currCon);
 		recList = recommender.getRecommendation();
 		return recList;
 	}
@@ -45,7 +47,7 @@ public class Predict_CAMFB {
 	public static void main(String[] args) throws Exception {
 		String user_id = "1";
 
-		String result = new Predict_CAMFB(user_id, null, 3).getRecommendation();
+		String result = new Predict_CAMFB(user_id, null, 3,null).getRecommendation();
 		if (result.isEmpty()) {
 			System.out.println("can not recommend");
 		} else {
@@ -65,15 +67,22 @@ class ContextMF extends BiasedMF {
 	public static int numContext;
 	// context matrix
 	public static SparseMatrix[] contextMatrix;
-	// number of each context's conditon
+	// number of each context's condition
 	public static int[] numCondition;
+	private int[] currCon;
 
-	ContextMF(int user_id, ArrayList<Integer> item_list, int recommendNums) {
+	ContextMF(int user_id, ArrayList<Integer> item_list, int recommendNums,int[] currCon) {
 		this.user_id = user_id;
 		this.item_list = item_list;
 		this.recommendNums = recommendNums;
 		trainMatrix = dao.readData();
 		contextMatrix = dao.readContextData();
+		numContext = contextMatrix.length;
+		this.currCon=currCon;
+		if(null==this.currCon){
+			this.currCon=new int[numContext];
+		}
+		numCondition=dao.getNumContextCondition();
 	}
 
 	@Override
@@ -132,9 +141,10 @@ class ContextMF extends BiasedMF {
 				for (int k = 0; k < numContext; k++) {
 					int context = (int) contextMatrix[k].get(u, j) - 1;
 					if (context >= 0) {
-						double bjc = B[k].get(j, context);
+						int innderContext=dao.getInnderContextId(context,k);
+						double bjc = B[k].get(j, innderContext);
 						sgd = euj - regBias * bjc;
-						B[k].add(j, context, learnRate * sgd);
+						B[k].add(j, innderContext, learnRate * sgd);
 					}
 				}
 			}
@@ -147,10 +157,27 @@ class ContextMF extends BiasedMF {
 
 	}
 
+	@Override
 	protected double predict(int u, int j) {
 		double bjc = 0;
 		for (int i = 0; i < numContext; i++) {
 			int context = (int) contextMatrix[i].get(u, j);
+			if (context > 0) {
+				bjc += B[i].get(j, dao.getInnderContextId(context, i));
+			}
+		}
+		return globalMean + userBiases.get(u) + itemBiases.get(j) + DenseMatrix.rowMult(userFactors, u, itemFactors, j)
+				+ bjc;
+	}
+	/**
+	 * get prediction for current user and item in conrr_con
+	 * */
+	protected double predict_curr(int u, int j,int curr_con[]) {
+		u=dao.getInnerUserId(u);
+		j=dao.getInnderItemId(j);
+		double bjc = 0;
+		for (int i = 0; i < numContext; i++) {
+			int context = dao.getInnderContextId(curr_con[i], i);
 			if (context > 0) {
 				bjc += B[i].get(j, context - 1);
 			}
@@ -158,29 +185,28 @@ class ContextMF extends BiasedMF {
 		return globalMean + userBiases.get(u) + itemBiases.get(j) + DenseMatrix.rowMult(userFactors, u, itemFactors, j)
 				+ bjc;
 	}
-
 	public String getRecommendation() throws LibrecException {
 		setup();
 		trainModel();
 		StringBuffer recList = new StringBuffer();
-		HashMap<Integer, String> init_list = new HashMap<>();
+		HashMap<Integer, Double> init_list = new HashMap<>();
 		for (int item_id : item_list) {
-			if(0==dao.getInnderItemId(item_id))
+			if (0 == dao.getInnderItemId(item_id))
 				continue;
-			double rate = predict(dao.getInnerUserId(user_id), dao.getInnderItemId(item_id));
+			double rate = predict_curr(user_id, item_id,currCon);
 			// 保留1位小数
 			BigDecimal b = new BigDecimal(rate);
 			rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-			String item_rating = String.valueOf(rate > 5 ? 5 : rate);
+			Double item_rating =rate > 5 ? 5 : rate;
 			init_list.put(item_id, item_rating);
 		}
-		int count = 0;
-		Set<Integer> keys = init_list.keySet();
-		Iterator<Integer> iterator = keys.iterator();
-		while (iterator.hasNext() && count < recommendNums) {
-			int item = iterator.next();
-			recList.append(item + "," + init_list.get(item) + ";");
-			count++;
+		//对候选推荐结果排序
+		List<Map.Entry<Integer, Double>> list=dao.sortHashMapByValue(init_list);
+		for(int i=0;i<recommendNums&&!list.isEmpty();i++){
+			int item=list.get(i).getKey();
+			double rate=list.get(i).getValue();
+			recList.append(item + "," + rate + ";");
+			list.remove(i);
 		}
 		return recList.toString();
 	}

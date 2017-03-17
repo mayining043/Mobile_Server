@@ -1,5 +1,9 @@
 package com.yly.dao;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import net.librec.math.structure.SparseMatrix;
 
 /**
@@ -46,4 +50,22 @@ public interface DataDao {
 	 */
 	public int getInnderItemId(int item_id);
 
+	/**
+	 * get inner context condition id
+	 * 
+	 * @param condtion_id,
+	 *            context means in which context
+	 * 
+	 * @return inner item id
+	 */
+	public int getInnderContextId(int condition_id, int context);
+
+	/**
+	 * get number of each context's condition
+	 */
+	public int[] getNumContextCondition();
+
+	/**
+	 * sort HashMap value in decrease order*/
+	public List<Map.Entry<Integer, Double>> sortHashMapByValue(HashMap<Integer, Double> init_list);
 }
