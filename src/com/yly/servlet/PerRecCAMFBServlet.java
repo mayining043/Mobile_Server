@@ -73,11 +73,11 @@ public class PerRecCAMFBServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 			if (recItems.isEmpty()) {
-				out.println("1,4.8;2,4.6;3,4.5;4,4.3;5,4.2");
+				out.print("1,4.8;2,4.6;3,4.5;4,4.3;5,4.2");
 			}
 			out.print(recItems);
 		} else {
-			out.print("There are no items in such area!");
+			out.print(0);
 		}
 
 		out.flush();

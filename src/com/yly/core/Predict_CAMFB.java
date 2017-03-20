@@ -170,7 +170,7 @@ class ContextMF extends BiasedMF {
 				+ bjc;
 	}
 	/**
-	 * get prediction for current user and item in conrr_con
+	 * get prediction for current user and item in current condition
 	 * */
 	protected double predict_curr(int u, int j,int curr_con[]) {
 		u=dao.getInnerUserId(u);
