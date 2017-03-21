@@ -63,7 +63,7 @@ public class PerRecBiasedMFServlet extends HttpServlet {
 			}
 			out.print(recItems);
 		} else {
-			out.print("There are no items in such area!");
+			out.print(0);
 		}
 
 		out.flush();
