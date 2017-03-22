@@ -205,10 +205,10 @@ public class DataDaoImpl implements DataDao {
 		return numCondition;
 	}
 	@Override
-	public List<Map.Entry<String, Double>> sortHashMapByValue(HashMap<String, Double> init_list) {
-		List<Map.Entry<String, Double>> list_Data = new ArrayList<Map.Entry<String, Double>>(init_list.entrySet());
-		Collections.sort(list_Data, new Comparator<Map.Entry<String, Double>>() {
-			public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+	public List<Map.Entry<Integer, Double>> sortHashMapByValue(HashMap<Integer, Double> init_list) {
+		List<Map.Entry<Integer, Double>> list_Data = new ArrayList<Map.Entry<Integer, Double>>(init_list.entrySet());
+		Collections.sort(list_Data, new Comparator<Map.Entry<Integer, Double>>() {
+			public int compare(Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2) {
 				if (o2.getValue() != null && o1.getValue() != null && o2.getValue().compareTo(o1.getValue()) > 0) {
 					return 1;
 				} else {

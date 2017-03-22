@@ -1,6 +1,5 @@
 package com.yly.core;
 
-import java.text.DecimalFormat;
 import java.util.List;
 
 import org.apache.mahout.cf.taste.impl.recommender.svd.ALSWRFactorizer;
@@ -10,6 +9,7 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 import com.yly.dao.ItemDao;
 import com.yly.dao.impl.ItemDaoImpl;
+import com.yly.entity.Item;
 import com.yly.util.GetDataModel;
 
 /**
@@ -49,22 +49,23 @@ public class _SVDRecommender {
 		/*
 		 * 预测的评分保留位数太多，不好看
 		 */
-		DecimalFormat df = new DecimalFormat("######0.0");
+		// DecimalFormat df = new DecimalFormat("######0.0");
 		recList = new StringBuffer("");// StringBuffer为空好像会出错
-		double rating;
-		ItemDao dao=new ItemDaoImpl();
+		// double rating;
+		ItemDao dao = new ItemDaoImpl();
 		if (recommendations != null) {
 			for (RecommendedItem item : recommendations) {
 				/*
 				 * SVD预测评分的时候，有时会出现评分>5的现象，这里做个限制
 				 */
-				rating = item.getValue() > 5 ? 5.0 : item.getValue();
+				// rating = item.getValue() > 5 ? 5.0 : item.getValue();
 				/*
 				 * 输出格式
 				 */
-				long item_id=item.getItemID();
-				String item_name=dao.search_itemName((int)item_id);
-				recList.append(item_name+","+df.format(rating)+";");
+				int item_id = (int) item.getItemID();
+				Item itemEntity = dao.search_itemInfo(item_id);
+				// recList.append(item_name+","+df.format(rating)+";");
+				recList.append(itemEntity.getItem_name() + "," + itemEntity.getItem_name() + ";");
 			}
 		}
 
@@ -75,7 +76,7 @@ public class _SVDRecommender {
 	}
 
 	public static void main(String[] args) throws Exception {
-		_SVDRecommender r = new _SVDRecommender("15", 5);
+		_SVDRecommender r = new _SVDRecommender("1", 5);
 		String t = r.getRecommendation();
 		System.out.println(t);
 	}

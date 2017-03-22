@@ -10,6 +10,7 @@ import com.yly.dao.DataDao;
 import com.yly.dao.ItemDao;
 import com.yly.dao.impl.DataDaoImpl;
 import com.yly.dao.impl.ItemDaoImpl;
+import com.yly.entity.Item;
 
 import net.librec.common.LibrecException;
 import net.librec.math.structure.DenseMatrix;
@@ -189,8 +190,8 @@ class ContextMF extends BiasedMF {
 		setup();
 		trainModel();
 		StringBuffer recList = new StringBuffer();
-		HashMap<String, Double> init_list = new HashMap<>();
-		ItemDao itemDao=new ItemDaoImpl();
+		HashMap<Integer, Double> init_list = new HashMap<>();
+		
 		for (int item_id : item_list) {
 			if (0 == dao.getInnderItemId(item_id))
 				continue;
@@ -199,14 +200,17 @@ class ContextMF extends BiasedMF {
 			BigDecimal b = new BigDecimal(rate);
 			rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
 			Double item_rating =rate > 5 ? 5 : rate;
-			init_list.put(itemDao.search_itemName(item_id), item_rating);
+			init_list.put(item_id,item_rating);
 		}
 		//对候选推荐结果排序
-		List<Map.Entry<String, Double>> list=dao.sortHashMapByValue(init_list);
+		List<Map.Entry<Integer, Double>> list=dao.sortHashMapByValue(init_list);
+		
+		ItemDao itemDao=new ItemDaoImpl();
+		//将物品名字，物品地址返回客户端。
 		for(int i=0;i<recommendNums&&!list.isEmpty();i++){
-			String item=list.get(i).getKey();
-			double rate=list.get(i).getValue();
-			recList.append(item + "," + rate + ";");
+			Integer item_id=list.get(i).getKey();
+			Item item=itemDao.search_itemInfo(item_id);
+			recList.append(item.getItem_name() + "," + item.getItem_address() + ";");
 			list.remove(i);
 		}
 		return recList.toString();

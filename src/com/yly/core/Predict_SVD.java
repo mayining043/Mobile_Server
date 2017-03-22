@@ -11,6 +11,7 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 import com.yly.dao.ItemDao;
 import com.yly.dao.impl.ItemDaoImpl;
+import com.yly.entity.Item;
 import com.yly.util.GetDataModel;
 
 /**
@@ -39,17 +40,18 @@ public class Predict_SVD {
 		SVDRecommender recommender = new SVDRecommender(model, new ALSWRFactorizer(model, 10, 0.05, 10));
 
 		List<RecommendedItem> recommendations = recommender.recommend(user_id, recommendNums);
-		ItemDao dao=new ItemDaoImpl();
+		ItemDao dao = new ItemDaoImpl();
 		for (RecommendedItem recItem : recommendations) {
 			int item_id = (int) recItem.getItemID();
 			// 如果推荐的物品在候选物品列表中
 			if (item_list.contains(item_id)) {
 				double rate = recItem.getValue();
-				//保留1位小数
+				// 保留1位小数
 				BigDecimal b = new BigDecimal(rate);
 				rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-				String item_rating = String.valueOf(rate > 5 ? 5 : rate);
-				recList.append(dao.search_itemName(item_id) + "," + item_rating + ";");
+				// String item_rating = String.valueOf(rate > 5 ? 5 : rate);
+				Item item = dao.search_itemInfo(item_id);
+				recList.append(item.getItem_name() + "," + item.getItem_address() + ";");
 			}
 		}
 
