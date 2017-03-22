@@ -67,5 +67,5 @@ public interface DataDao {
 
 	/**
 	 * sort HashMap value in decrease order*/
-	public List<Map.Entry<Integer, Double>> sortHashMapByValue(HashMap<Integer, Double> init_list);
+	public List<Map.Entry<String, Double>> sortHashMapByValue(HashMap<String, Double> init_list);
 }

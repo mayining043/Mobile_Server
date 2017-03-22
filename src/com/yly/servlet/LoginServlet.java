@@ -50,8 +50,6 @@ public class LoginServlet extends HttpServlet {
 	private String build(User u) {
 		String userMsg = "";
 		userMsg += u.getUser_id();
-		userMsg += ",";
-		userMsg += u.getUser_name();
 		return userMsg;
 	}
 

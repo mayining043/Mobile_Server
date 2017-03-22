@@ -6,9 +6,7 @@ public class Item {
 	private double longitude;
 	private double latitude;
 	private String item_address;
-	private double avg_price;
-	private double avg_rating;
-	private String item_type;
+
 
 	public int getItem_id() {
 		return item_id;
@@ -50,27 +48,4 @@ public class Item {
 		this.item_address = item_address;
 	}
 
-	public double getAvg_price() {
-		return avg_price;
-	}
-
-	public void setAvg_price(double avg_price) {
-		this.avg_price = avg_price;
-	}
-
-	public double getAvg_rating() {
-		return avg_rating;
-	}
-
-	public void setAvg_rating(double avg_rating) {
-		this.avg_rating = avg_rating;
-	}
-
-	public String getItem_type() {
-		return item_type;
-	}
-
-	public void setItem_type(String item_type) {
-		this.item_type = item_type;
-	}
 }

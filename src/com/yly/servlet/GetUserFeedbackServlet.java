@@ -42,7 +42,6 @@ public class GetUserFeedbackServlet extends HttpServlet {
 
 		// 获得客户端参数
 		int user_id = Integer.parseInt(request.getParameter("user_id"));
-		int item_id = Integer.parseInt(request.getParameter("item_id"));
 		double rating = Double.parseDouble(request.getParameter("rating"));
 		double longitude = Double.parseDouble(request.getParameter("longitude"));
 		double latitude = Double.parseDouble(request.getParameter("latitude"));
@@ -52,25 +51,23 @@ public class GetUserFeedbackServlet extends HttpServlet {
 		int daytype = Integer.parseInt(request.getParameter("daytype"));
 		// item parameters
 		String item_name = request.getParameter("item_name");
-		String item_address = request.getParameter("item_address");
-		double avg_price = Double.parseDouble(request.getParameter("avg_price"));
-		double avg_rating = Double.parseDouble(request.getParameter("avg_rating"));
-		String item_type = request.getParameter("item_type");
-		double item_longitude = Double.parseDouble(request.getParameter("item_longitude"));
-		double item_latitude = Double.parseDouble(request.getParameter("item_latitude"));
+		System.out.println(dao.search_itemId(item_name));
+		// 如果物品没有添加过到数据库里
+		if (-1 == dao.search_itemId(item_name)) {
+			String item_address = request.getParameter("item_address");
+			double item_longitude = Double.parseDouble(request.getParameter("item_longitude"));
+			double item_latitude = Double.parseDouble(request.getParameter("item_latitude"));
 
-		Item item = new Item();
-		item.setItem_id(item_id);
-		item.setItem_name(item_name);
-		item.setAvg_price(avg_price);
-		item.setAvg_rating(avg_rating);
-		item.setItem_address(item_address);
-		item.setLatitude(item_latitude);
-		item.setLongitude(item_longitude);
-		item.setItem_type(item_type);
+			Item item = new Item();
+			item.setItem_name(item_name);
+			item.setItem_address(item_address);
+			item.setLatitude(item_latitude);
+			item.setLongitude(item_longitude);
+			dao.addItem(item);
+	
+		}
 
-		dao.addItem(item);
-
+		int item_id = dao.search_itemId(item_name);
 		int addFeedbackResult = dao.addUserFeedback(user_id, item_id, rating, latitude, longitude, time, daytype,
 				weather, season);
 

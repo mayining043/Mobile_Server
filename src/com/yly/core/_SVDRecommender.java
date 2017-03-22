@@ -8,6 +8,8 @@ import org.apache.mahout.cf.taste.impl.recommender.svd.SVDRecommender;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
+import com.yly.dao.ItemDao;
+import com.yly.dao.impl.ItemDaoImpl;
 import com.yly.util.GetDataModel;
 
 /**
@@ -50,6 +52,7 @@ public class _SVDRecommender {
 		DecimalFormat df = new DecimalFormat("######0.0");
 		recList = new StringBuffer("");// StringBuffer为空好像会出错
 		double rating;
+		ItemDao dao=new ItemDaoImpl();
 		if (recommendations != null) {
 			for (RecommendedItem item : recommendations) {
 				/*
@@ -59,7 +62,9 @@ public class _SVDRecommender {
 				/*
 				 * 输出格式
 				 */
-				recList.append(item.getItemID() + "," + df.format(rating) + ";");
+				long item_id=item.getItemID();
+				String item_name=dao.search_itemName((int)item_id);
+				recList.append(item_name+","+df.format(rating)+";");
 			}
 		}
 

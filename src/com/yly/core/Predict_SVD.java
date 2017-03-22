@@ -39,6 +39,7 @@ public class Predict_SVD {
 		SVDRecommender recommender = new SVDRecommender(model, new ALSWRFactorizer(model, 10, 0.05, 10));
 
 		List<RecommendedItem> recommendations = recommender.recommend(user_id, recommendNums);
+		ItemDao dao=new ItemDaoImpl();
 		for (RecommendedItem recItem : recommendations) {
 			int item_id = (int) recItem.getItemID();
 			// 如果推荐的物品在候选物品列表中
@@ -48,7 +49,7 @@ public class Predict_SVD {
 				BigDecimal b = new BigDecimal(rate);
 				rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
 				String item_rating = String.valueOf(rate > 5 ? 5 : rate);
-				recList.append(item_id + "," + item_rating + ";");
+				recList.append(dao.search_itemName(item_id) + "," + item_rating + ";");
 			}
 		}
 

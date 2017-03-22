@@ -119,7 +119,8 @@ class BiasedMF extends BiasedMFRecommender {
 		setup();
 		trainModel();
 		StringBuffer recList = new StringBuffer();
-		HashMap<Integer, Double> init_list = new HashMap<>();
+		HashMap<String, Double> init_list = new HashMap<>();
+		ItemDao itemDao=new ItemDaoImpl();
 		for (int item_id : item_list) {
 			if(0==dao.getInnderItemId(item_id))
 				continue;
@@ -128,12 +129,12 @@ class BiasedMF extends BiasedMFRecommender {
 			BigDecimal b = new BigDecimal(rate);
 			rate = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
 			Double item_rating = rate > 5 ? 5 : rate;
-			init_list.put(item_id, item_rating);
+			init_list.put(itemDao.search_itemName(item_id), item_rating);
 		}
 		//对候选推荐结果排序
-		List<Map.Entry<Integer, Double>> list=dao.sortHashMapByValue(init_list);
+		List<Map.Entry<String, Double>> list=dao.sortHashMapByValue(init_list);
 		for(int i=0;i<recommendNums&&!list.isEmpty();i++){
-			int item=list.get(i).getKey();
+			String item=list.get(i).getKey();
 			double rate=list.get(i).getValue();
 			recList.append(item + "," + rate + ";");
 			list.remove(i);

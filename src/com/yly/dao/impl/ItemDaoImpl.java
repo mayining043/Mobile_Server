@@ -45,12 +45,12 @@ public class ItemDaoImpl implements ItemDao {
 
 	@Override
 	public int addItem(Item i) {
-		int item_id = i.getItem_id();
+		String item_name = i.getItem_name();
 		// we need to check whether the item has already added
-		if (null == search_itemName(item_id)) {
+		if (-1 == search_itemId(item_name)) {
 
 			// SQL插入语句,user_id will auto increase
-			String sql = "insert into iteminfo (item_id,item_name,latitude,longitude,item_address,item_type,avg_price,avg_rating) values(?,?,?,?,?,?,?,?);";
+			String sql = "insert into iteminfo (item_name,latitude,longitude,item_address) values(?,?,?,?);";
 
 			// 实例化数据库工具类
 			DBUtil util = new DBUtil();
@@ -63,14 +63,10 @@ public class ItemDaoImpl implements ItemDao {
 				PreparedStatement pstmt = conn.prepareStatement(sql);
 
 				// set sql parameter
-				pstmt.setInt(1, i.getItem_id());
-				pstmt.setString(2, i.getItem_name());
-				pstmt.setDouble(3, i.getLatitude());
-				pstmt.setDouble(4, i.getLongitude());
-				pstmt.setString(5, i.getItem_address());
-				pstmt.setString(6, i.getItem_type());
-				pstmt.setDouble(7, i.getAvg_price());
-				pstmt.setDouble(8, i.getAvg_rating());
+				pstmt.setString(1, i.getItem_name());
+				pstmt.setDouble(2, i.getLatitude());
+				pstmt.setDouble(3, i.getLongitude());
+				pstmt.setString(4, i.getItem_address());
 
 				int rs = pstmt.executeUpdate();
 
@@ -153,17 +149,11 @@ public class ItemDaoImpl implements ItemDao {
 				String item_name = rs.getString("item_name");
 				Double latitude = rs.getDouble("latitude");
 				Double longitude = rs.getDouble("longitude");
-				Double avg_price = rs.getDouble("avg_price");
-				Double avg_rating = rs.getDouble("avg_rating");
-				String item_type = rs.getString("item_type");
 				String item_address = rs.getString("item_address");
 				// 设置Item属性
 				i.setItem_id(item_id);
 				i.setItem_name(item_name);
-				i.setAvg_price(avg_price);
-				i.setAvg_rating(avg_rating);
 				i.setItem_address(item_address);
-				i.setItem_type(item_type);
 				i.setLatitude(latitude);
 				i.setLongitude(longitude);
 
@@ -241,5 +231,37 @@ public class ItemDaoImpl implements ItemDao {
 		} finally {
 			util.closeConn(conn);
 		}
+	}
+
+	@Override
+	public int search_itemId(String item_name) {
+		// SQL查询语句
+		String sql = "select item_id from iteminfo where item_name=?";
+		// 实例化数据库工具类
+		DBUtil util = new DBUtil();
+		// 获得数据库连接
+		Connection conn = util.openConnection();
+
+		try {
+			// 创建预定义语句
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+
+			// 设置查询参数
+			pstmt.setString(1, item_name);
+
+			// 结果集
+			ResultSet rs = pstmt.executeQuery();
+
+			// 判断该物品是否存在
+			if (rs.next()) {
+				return rs.getInt("item_id");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			util.closeConn(conn);
+		}
+		//如果物品不存在返回-1
+		return -1;
 	}
 }

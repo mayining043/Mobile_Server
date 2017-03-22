@@ -19,6 +19,13 @@ public interface ItemDao {
 	 * @return Item
 	 */
 	public Item search_itemInfo(int item_id);
+	/**
+	 * search item_id by item_name
+	 * 
+	 * @param item_name
+	 * @return item_id
+	 */
+	public int search_itemId(String item_name);
 
 	/**
 	 * add user's feedback to database

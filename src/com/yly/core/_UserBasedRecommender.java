@@ -13,6 +13,8 @@ import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.*;
 
+import com.yly.dao.ItemDao;
+import com.yly.dao.impl.ItemDaoImpl;
 import com.yly.util.GetDataModel;
 
 /**
@@ -65,6 +67,7 @@ public class _UserBasedRecommender {
 		DecimalFormat df = new DecimalFormat("######0.0");   
 		recList = new StringBuffer("");//StringBuffer为空好像会出错
 		double rating ;
+		ItemDao dao=new ItemDaoImpl();
 		for(RecommendedItem item : recommendations){
 			/*
 			 * 预测评分的时候，有时会出现评分>5的现象，这里做个限制
@@ -73,7 +76,9 @@ public class _UserBasedRecommender {
 			/*
 			 * 输出格式
 			 */
-			recList.append(item.getItemID()+","+df.format(rating)+";");
+			long item_id=item.getItemID();
+			String item_name=dao.search_itemName((int)item_id);
+			recList.append(item_name+","+df.format(rating)+";");
 		}
 		return recList.toString();
 	}
